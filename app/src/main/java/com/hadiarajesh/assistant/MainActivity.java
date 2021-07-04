@@ -58,6 +58,8 @@ import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity implements RecognitionListener, TextToSpeech.OnInitListener{
 
+    private static final String WOLFRAM_ALPHA_APP_ID = "YOUR_APP_ID";
+
     Toggle_Service ts=new Toggle_Service();
 
     Context context=this;
@@ -194,9 +196,6 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         if(i!=TextToSpeech.SUCCESS) {
             Toast.makeText(this, "TTS Initialization Failed", Toast.LENGTH_SHORT).show();
         }
-//        else {
-//            Toast.makeText(this, "TTS Initialization Failed", Toast.LENGTH_SHORT).show();
-//        }
     }
 
     @Override
@@ -275,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             try {
                     String contactName = text.substring(text.indexOf("to") + 2, text.indexOf("that")).trim();
                     String number= getContactNumber(contactName);
-                    String msgContent = text.substring(text.indexOf("that")+4, text.length()).trim();
+                    String msgContent = text.substring(text.indexOf("that")+4).trim();
 
                     SmsManager smsManager = SmsManager.getDefault();
                     smsManager.sendTextMessage(number,null,msgContent,null,null);
@@ -291,13 +290,13 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             getInstalledApp();
             String appName = "";
             if(text.contains("open")) {
-                appName = text.substring(text.indexOf("open")+4, text.length()).trim();
+                appName = text.substring(text.indexOf("open")+4).trim();
             }
             else if(text.contains("launch")) {
-                appName = text.substring(text.indexOf("launch")+6, text.length()).trim();
+                appName = text.substring(text.indexOf("launch")+6).trim();
             }
             else if(text.contains("deploy")) {
-                appName = text.substring(text.indexOf("deploy")+6, text.length()).trim();
+                appName = text.substring(text.indexOf("deploy")+6).trim();
             }
             startApp(appName.toLowerCase());
 
@@ -329,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                 myDir.mkdirs();
 
                 Calendar calendar=Calendar.getInstance();
-                String time = String.valueOf(calendar.get(Calendar.MINUTE)) + String.valueOf(calendar.get(Calendar.SECOND));
+                String time = calendar.get(Calendar.MINUTE) + String.valueOf(calendar.get(Calendar.SECOND));
                 
                 String fname = "Photo"+time+".jpg";
                 File file = new File(myDir,fname);
@@ -346,13 +345,13 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             }
         }
 
-        public void getAnswer(final String text) {
+        public void getAnswer(String text) {
             img_loading.setVisibility(View.VISIBLE);
             String url = Uri.parse("https://api.wolframalpha.com/v2/query")
                     .buildUpon()
                     .appendQueryParameter("format", "image,plaintext")
                     .appendQueryParameter("output", "JSON")
-                    .appendQueryParameter("appid", "UH3LT7-XVJKKVW7XY")
+                    .appendQueryParameter("appid", WOLFRAM_ALPHA_APP_ID)
                     .build()
                     .toString();
             url += "&input=" + text.replace(" ", "+");
@@ -397,13 +396,10 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                         e.printStackTrace();
                     }
                 }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    img_loading.setVisibility(View.INVISIBLE);
-                    textView.setText("");
-                    speakResult("Sorry, i think i don't know about it.");
-                }
+            }, error -> {
+                img_loading.setVisibility(View.INVISIBLE);
+                textView.setText("");
+                speakResult("Sorry, i think i don't know about it.");
             });
             VolleyRequest.getInstance(this).addToRequestQueue(appDataRequest);
         }
@@ -476,7 +472,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                 }
             }}
 
-        Toast.makeText(getBaseContext(),"Contacts Inserted",Toast.LENGTH_LONG).show();
+        Toast.makeText(getBaseContext(),"Contacts list updated",Toast.LENGTH_LONG).show();
         cur.close();
         database.close();
         databaseHelper.close();
